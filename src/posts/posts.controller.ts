@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   NotFoundException,
   Param,
@@ -113,5 +114,18 @@ export class PostsController {
     posts = posts.map((prevPost) => (prevPost.id === +id ? post : prevPost));
 
     return post;
+  }
+
+  @Delete(':id')
+  deletePost(@Param('id') id: string) {
+    const post = posts.find((item) => item.id === +id);
+
+    if (!post) {
+      throw new NotFoundException();
+    }
+
+    posts = posts.filter((post) => post.id !== +id);
+
+    return id;
   }
 }
