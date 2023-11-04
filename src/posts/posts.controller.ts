@@ -1,8 +1,8 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Param } from '@nestjs/common';
 import { PostsService } from './posts.service';
 
 interface PostModel {
-  id: string;
+  id: number;
   author: string;
   title: string;
   content: string;
@@ -12,7 +12,7 @@ interface PostModel {
 
 const posts: PostModel[] = [
   {
-    id: '1',
+    id: 1,
     author: 'newjeans_official',
     title: '뉴진스 민지',
     content: '메이크업 고치고 있는 민지',
@@ -20,7 +20,7 @@ const posts: PostModel[] = [
     commentCount: 100,
   },
   {
-    id: '2',
+    id: 2,
     author: 'newjeans_official',
     title: '뉴진스 해린',
     content: '노래 연습 하고 있는 해린',
@@ -28,10 +28,10 @@ const posts: PostModel[] = [
     commentCount: 100,
   },
   {
-    id: '3',
+    id: 3,
     author: 'blackpink_official',
     title: '블랙핑크 로제',
-    content: '종합운동장에서 공연중인제 로제',
+    content: '종합운동장에서 공연중인 로제',
     likeCount: 10000,
     commentCount: 100,
   },
@@ -44,5 +44,10 @@ export class PostsController {
   @Get()
   getPosts(): PostModel[] {
     return posts;
+  }
+
+  @Get(':id')
+  getPost(@Param('id') id: string) {
+    return posts.find((item) => item.id === +id);
   }
 }
