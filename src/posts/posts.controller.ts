@@ -1,4 +1,11 @@
-import { Controller, Get, NotFoundException, Param } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  NotFoundException,
+  Param,
+  Post,
+} from '@nestjs/common';
 import { PostsService } from './posts.service';
 
 interface PostModel {
@@ -10,7 +17,7 @@ interface PostModel {
   commentCount: number;
 }
 
-const posts: PostModel[] = [
+let posts: PostModel[] = [
   {
     id: 1,
     author: 'newjeans_official',
@@ -54,6 +61,24 @@ export class PostsController {
       throw new NotFoundException();
     }
 
+    return post;
+  }
+
+  @Post()
+  postPosts(
+    @Body('author') author: string,
+    @Body('title') title: string,
+    @Body('content') content: string,
+  ) {
+    const post: PostModel = {
+      id: posts[posts.length - 1].id + 1,
+      author: author,
+      title: title,
+      content: content,
+      likeCount: 0,
+      commentCount: 0,
+    };
+    posts = [...posts, post];
     return post;
   }
 }
