@@ -15,7 +15,8 @@ export class AuthService {
   signToken(user: Pick<UsersModel, 'email' | 'id'>, isRefreshToken: boolean) {
     const payload = {
       email: user.email,
-      id: user.id,
+      sub: user.id,
+      type: isRefreshToken ? 'refresh' : 'access',
     };
 
     return this.jwtService.sign(payload, {
