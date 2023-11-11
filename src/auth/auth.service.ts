@@ -1,7 +1,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersModel } from '../users/entities/users.entity';
-import { JWT_SECRET } from './const/auth.const';
+import { HASH_ROUNDS, JWT_SECRET } from './const/auth.const';
 import { UsersService } from '../users/users.service';
 import * as bcrypt from 'bcrypt';
 
@@ -50,5 +50,17 @@ export class AuthService {
   async loginWithEmail(user: Pick<UsersModel, 'email' | 'password'>) {
     const existingUser = await this.authenticateWithEmailAndPassword(user);
     return this.loginUser(existingUser);
+  }
+
+  async registerWithEmail(
+    user: Pick<UsersModel, 'nickname' | 'email' | 'password'>,
+  ) {
+    const hash = await bcrypt.hash(user.password, HASH_ROUNDS);
+    const newUser = await this.usersService.createUser({
+      ...user,
+      password: hash,
+    });
+
+    return this.loginUser(newUser);
   }
 }
