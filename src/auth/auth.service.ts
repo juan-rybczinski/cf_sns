@@ -64,4 +64,15 @@ export class AuthService {
 
     return this.loginUser(newUser);
   }
+
+  extractTokenFromHeader(header: string, isBearer: boolean) {
+    const splitToken = header.split(' ');
+
+    const prefix = isBearer ? 'Bearer' : 'Basic';
+    if (splitToken.length !== 2 || splitToken[0] !== prefix) {
+      return new UnauthorizedException('잘못된 토큰입니다!');
+    }
+
+    return splitToken[1];
+  }
 }
