@@ -5,6 +5,7 @@ import { PostsModel } from './entities/posts.entity';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { PaginatePostDto } from './dto/paginate-post.dto';
+import { HOST, PROTOCOL } from '../common/const/env.const';
 
 @Injectable()
 export class PostsService {
@@ -24,7 +25,7 @@ export class PostsService {
   async paginatePosts(dto: PaginatePostDto) {
     const posts = await this.postsRepository.find({
       where: {
-        id: MoreThan(dto.where__id_more_that ?? 0),
+        id: MoreThan(dto.where__id_more_than ?? 0),
       },
       order: {
         createdAt: dto.order__createdAt,
@@ -32,8 +33,28 @@ export class PostsService {
       take: dto.take,
     });
 
+    const lastItem = posts.length > 0 ? posts[posts.length - 1] : null;
+
+    const nextUrl = lastItem && new URL(`${PROTOCOL}://${HOST}/posts`);
+    if (nextUrl) {
+      for (const key of Object.keys(dto)) {
+        if (key !== 'where__id_more_than') {
+          nextUrl.searchParams.append(key, dto[key]);
+        }
+      }
+      nextUrl.searchParams.append(
+        'where__id_more_than',
+        lastItem.id.toString(),
+      );
+    }
+
     return {
       data: posts,
+      cursor: {
+        after: lastItem?.id,
+      },
+      count: posts.length,
+      next: nextUrl.toString(),
     };
   }
 

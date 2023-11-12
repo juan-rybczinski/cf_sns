@@ -4,7 +4,7 @@ export class PaginatePostDto {
   // @Type(() => Number)
   @IsNumber()
   @IsOptional()
-  where__id_more_that?: number;
+  where__id_more_than?: number;
 
   @IsIn(['ASC'])
   @IsOptional()
