@@ -70,9 +70,23 @@ export class AuthService {
 
     const prefix = isBearer ? 'Bearer' : 'Basic';
     if (splitToken.length !== 2 || splitToken[0] !== prefix) {
-      return new UnauthorizedException('잘못된 토큰입니다!');
+      throw new UnauthorizedException('잘못된 토큰입니다!');
     }
 
     return splitToken[1];
+  }
+
+  decodeBasicToken(base64String: string) {
+    const decoded = Buffer.from(base64String, 'base64').toString('utf8');
+
+    const split = decoded.split(':');
+    if (split.length !== 2) {
+      throw new UnauthorizedException('잘못된 유형의 토큰입니다!');
+    }
+
+    return {
+      email: split[0],
+      password: split[1],
+    };
   }
 }
