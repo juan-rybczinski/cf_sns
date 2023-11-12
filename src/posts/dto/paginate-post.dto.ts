@@ -6,9 +6,13 @@ export class PaginatePostDto {
   @IsOptional()
   where__id_more_than?: number;
 
-  @IsIn(['ASC'])
+  @IsNumber()
   @IsOptional()
-  order__createdAt: 'ASC' = 'ASC';
+  where__id_less_than?: number;
+
+  @IsIn(['ASC', 'DESC'])
+  @IsOptional()
+  order__createdAt: 'ASC' | 'DESC' = 'ASC';
 
   @IsNumber()
   @IsOptional()

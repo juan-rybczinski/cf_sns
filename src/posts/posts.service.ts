@@ -38,14 +38,18 @@ export class PostsService {
     const nextUrl = lastItem && new URL(`${PROTOCOL}://${HOST}/posts`);
     if (nextUrl) {
       for (const key of Object.keys(dto)) {
-        if (key !== 'where__id_more_than') {
+        if (key !== 'where__id_more_than' && key !== 'where__id_less_than') {
           nextUrl.searchParams.append(key, dto[key]);
         }
       }
-      nextUrl.searchParams.append(
-        'where__id_more_than',
-        lastItem.id.toString(),
-      );
+
+      let key: string;
+      if (dto.order__createdAt === 'ASC') {
+        key = 'where__id_more_than';
+      } else {
+        key = 'where__id_less_than';
+      }
+      nextUrl.searchParams.append(key, lastItem.id.toString());
     }
 
     return {
