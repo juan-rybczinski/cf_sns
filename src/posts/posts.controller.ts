@@ -16,6 +16,7 @@ import { User } from '../users/decorator/user.decorator';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { PaginatePostDto } from './dto/paginate-post.dto';
+import { UsersModel } from '../users/entities/users.entity';
 
 @Controller('posts')
 export class PostsController {
@@ -35,6 +36,13 @@ export class PostsController {
   @UseGuards(AccessTokenGuard)
   postPosts(@User('id') userId: number, @Body() body: CreatePostDto) {
     return this.postsService.createPost(userId, body);
+  }
+
+  @Post('random')
+  @UseGuards(AccessTokenGuard)
+  async postRandomPosts(@User() user: UsersModel) {
+    await this.postsService.generatePosts(user.id);
+    return true;
   }
 
   @Patch(':id')

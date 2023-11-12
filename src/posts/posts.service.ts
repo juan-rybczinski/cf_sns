@@ -52,6 +52,15 @@ export class PostsService {
     return post;
   }
 
+  async generatePosts(userId: number) {
+    for (let i = 0; i < 100; i++) {
+      await this.createPost(userId, {
+        title: `임의로 생성된 포스트 제목 ${i}`,
+        content: `임의로 생성된 포스트 내용 ${i}`,
+      });
+    }
+  }
+
   async createPost(authorId: number, postDto: CreatePostDto) {
     const post = this.postsRepository.create({
       author: {
