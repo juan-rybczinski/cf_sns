@@ -1,9 +1,13 @@
 import { IsString } from 'class-validator';
 
 export class CreatePostDto {
-  @IsString()
+  @IsString({
+    message: 'Title은 String 타입입니다!',
+  })
   title: string;
 
-  @IsString()
+  @IsString({
+    message: 'Content는 String 타입입니다!',
+  })
   content: string;
 }
