@@ -6,15 +6,15 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('login/email')
-  loginByEmail(@Headers('Authorization') rawToken: string) {
+  postLoginByEmail(@Headers('Authorization') rawToken: string) {
     const token = this.authService.extractTokenFromHeader(rawToken, false);
     const credentials = this.authService.decodeBasicToken(token);
 
     return this.authService.loginWithEmail(credentials);
   }
 
-  @Post('/register/email')
-  registerByEmail(
+  @Post('register/email')
+  postRegisterByEmail(
     @Body('nickname') nickname: string,
     @Body('email') email: string,
     @Body('password') password: string,
@@ -24,5 +24,21 @@ export class AuthController {
       email,
       password,
     });
+  }
+
+  @Post('token/access')
+  postTokenAccess(@Headers('Authorization') rawToken: string) {
+    const token = this.authService.extractTokenFromHeader(rawToken, true);
+    return {
+      accessToken: this.authService.rotateToken(token, false),
+    };
+  }
+
+  @Post('token/refresh')
+  postRefreshAccess(@Headers('Authorization') rawToken: string) {
+    const token = this.authService.extractTokenFromHeader(rawToken, true);
+    return {
+      refreshToken: this.authService.rotateToken(token, true),
+    };
   }
 }
