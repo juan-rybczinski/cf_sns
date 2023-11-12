@@ -9,6 +9,7 @@ import {
 import { AuthService } from './auth.service';
 import { MaxLengthPipe, MinLengthPipe } from './pipe/password.pipe';
 import { BasicTokenGuard } from './guard/basic-token.guard';
+import { RefreshTokenGuard } from './guard/bearer-token.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -42,6 +43,7 @@ export class AuthController {
   }
 
   @Post('token/access')
+  @UseGuards(RefreshTokenGuard)
   postTokenAccess(@Headers('Authorization') rawToken: string) {
     const token = this.authService.extractTokenFromHeader(rawToken, true);
     return {
@@ -50,6 +52,7 @@ export class AuthController {
   }
 
   @Post('token/refresh')
+  @UseGuards(RefreshTokenGuard)
   postRefreshAccess(@Headers('Authorization') rawToken: string) {
     const token = this.authService.extractTokenFromHeader(rawToken, true);
     return {
