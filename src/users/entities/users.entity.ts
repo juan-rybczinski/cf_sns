@@ -9,6 +9,7 @@ import { emailValidationMessage } from '../../common/validation-message/email-va
 import { Exclude, Expose } from 'class-transformer';
 
 @Entity()
+@Exclude()
 export class UsersModel extends BaseModel {
   @Column({
     length: 20,
@@ -20,6 +21,7 @@ export class UsersModel extends BaseModel {
   @Length(1, 20, {
     message: lengthValidationMessage,
   })
+  @Expose()
   nickname: string;
 
   @Column({
@@ -34,6 +36,7 @@ export class UsersModel extends BaseModel {
       message: emailValidationMessage,
     },
   )
+  @Expose()
   email: string;
 
   @Column()
@@ -56,9 +59,4 @@ export class UsersModel extends BaseModel {
 
   @OneToMany(() => PostsModel, (post) => post.author)
   posts: PostsModel[];
-
-  @Expose()
-  get nicknameAndEmail() {
-    return this.nickname + '/' + this.email;
-  }
 }
