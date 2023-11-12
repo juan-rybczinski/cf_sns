@@ -33,7 +33,7 @@ export class PostsService {
       take: dto.take,
     });
 
-    const lastItem = posts.length > 0 ? posts[posts.length - 1] : null;
+    const lastItem = posts.length === dto.take ? posts[posts.length - 1] : null;
 
     const nextUrl = lastItem && new URL(`${PROTOCOL}://${HOST}/posts`);
     if (nextUrl) {
@@ -54,7 +54,7 @@ export class PostsService {
         after: lastItem?.id,
       },
       count: posts.length,
-      next: nextUrl.toString(),
+      next: nextUrl?.toString(),
     };
   }
 
