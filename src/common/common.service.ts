@@ -12,8 +12,6 @@ import { HOST, PROTOCOL } from './const/env.const';
 
 @Injectable()
 export class CommonService {
-  prviate;
-
   async paginate<T extends BaseModel>(
     dto: BasePaginationDto,
     repository: Repository<T>,
@@ -27,7 +25,7 @@ export class CommonService {
     }
   }
 
-  async cursorPaginate<T extends BaseModel>(
+  private async cursorPaginate<T extends BaseModel>(
     dto: BasePaginationDto,
     repository: Repository<T>,
     overrideFindOptions: FindManyOptions<T> = {},
@@ -72,7 +70,18 @@ export class CommonService {
     dto: BasePaginationDto,
     repository: Repository<T>,
     overrideFindOptions: FindManyOptions<T> = {},
-  ) {}
+  ) {
+    const findOptions = this.composeFindOptions<T>(dto);
+    const [data, total] = await repository.findAndCount({
+      ...findOptions,
+      ...overrideFindOptions,
+    });
+
+    return {
+      total,
+      data,
+    };
+  }
 
   private composeFindOptions<T extends BaseModel>(
     dto: BasePaginationDto,

@@ -27,21 +27,6 @@ export class PostsService {
     return this.commonService.paginate(dto, this.postsRepository, {}, 'posts');
   }
 
-  async pagePaginatePosts(dto: PaginatePostDto) {
-    const [posts, total] = await this.postsRepository.findAndCount({
-      skip: dto.take * (dto.page - 1),
-      take: dto.take,
-      order: {
-        createdAt: dto.order__createdAt,
-      },
-    });
-
-    return {
-      total,
-      data: posts,
-    };
-  }
-
   async getPostById(id: number) {
     const post = await this.postsRepository.findOne({
       relations: {
