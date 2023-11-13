@@ -31,7 +31,7 @@ export class PostsService {
   }
 
   async pagePaginatePosts(dto: PaginatePostDto) {
-    const posts = await this.postsRepository.find({
+    const [posts, total] = await this.postsRepository.findAndCount({
       skip: dto.take * (dto.page - 1),
       take: dto.take,
       order: {
@@ -40,6 +40,7 @@ export class PostsService {
     });
 
     return {
+      total,
       data: posts,
     };
   }
