@@ -23,6 +23,16 @@ export class PostsService {
   }
 
   async paginatePosts(dto: PaginatePostDto) {
+    if (dto.page) {
+      return this.pagePaginatePosts(dto);
+    } else {
+      return this.cursorPaginatePosts(dto);
+    }
+  }
+
+  async pagePaginatePosts(dto: PaginatePostDto) {}
+
+  async cursorPaginatePosts(dto: PaginatePostDto) {
     const where: FindOptionsWhere<PostsModel> = {};
     if (dto.where__id_more_than) {
       where.id = MoreThan(dto.where__id_more_than);

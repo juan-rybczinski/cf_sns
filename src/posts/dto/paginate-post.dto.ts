@@ -1,6 +1,10 @@
 import { IsIn, IsNumber, IsOptional } from 'class-validator';
 
 export class PaginatePostDto {
+  @IsNumber()
+  @IsOptional()
+  page?: number;
+
   // @Type(() => Number)
   @IsNumber()
   @IsOptional()
