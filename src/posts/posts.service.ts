@@ -30,7 +30,19 @@ export class PostsService {
     }
   }
 
-  async pagePaginatePosts(dto: PaginatePostDto) {}
+  async pagePaginatePosts(dto: PaginatePostDto) {
+    const posts = await this.postsRepository.find({
+      skip: dto.take * (dto.page - 1),
+      take: dto.take,
+      order: {
+        createdAt: dto.order__createdAt,
+      },
+    });
+
+    return {
+      data: posts,
+    };
+  }
 
   async cursorPaginatePosts(dto: PaginatePostDto) {
     const where: FindOptionsWhere<PostsModel> = {};
