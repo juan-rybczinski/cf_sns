@@ -130,11 +130,17 @@ export class CommonService {
     } else if (split.length === 3) {
       const [_, field, operator] = split;
       const values = value.toString().split(',');
-      options[field] = FILTER_MAPPER[operator](
-        values.length > 1 ? values : value,
-      );
+      if (values.length === 2) {
+        const [v1, v2] = values;
+        options[field] = FILTER_MAPPER[operator](v1, v2);
+      } else if (values.length === 1) {
+        if (operator === 'i_like') {
+          options[field] = FILTER_MAPPER[operator](`%${value}%`);
+        } else {
+          options[field] = FILTER_MAPPER[operator](value);
+        }
+      }
     }
-
     return options;
   }
 
