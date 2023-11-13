@@ -1,24 +1,3 @@
-import { IsIn, IsNumber, IsOptional } from 'class-validator';
+import { BasePaginationDto } from '../../common/dto/base-pagination.dto';
 
-export class PaginatePostDto {
-  @IsNumber()
-  @IsOptional()
-  page?: number;
-
-  // @Type(() => Number)
-  @IsNumber()
-  @IsOptional()
-  where__id_more_than?: number;
-
-  @IsNumber()
-  @IsOptional()
-  where__id_less_than?: number;
-
-  @IsIn(['ASC', 'DESC'])
-  @IsOptional()
-  order__createdAt: 'ASC' | 'DESC' = 'ASC';
-
-  @IsNumber()
-  @IsOptional()
-  take: number = 20;
-}
+export class PaginatePostDto extends BasePaginationDto {}
