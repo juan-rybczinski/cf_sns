@@ -8,24 +8,65 @@ import {
   Repository,
 } from 'typeorm';
 import { FILTER_MAPPER } from './const/filter-mapper.const';
+import { HOST, PROTOCOL } from './const/env.const';
 
 @Injectable()
 export class CommonService {
   prviate;
 
-  paginate<T extends BaseModel>(
+  async paginate<T extends BaseModel>(
     dto: BasePaginationDto,
     repository: Repository<T>,
     overrideFindOptions: FindManyOptions<T> = {},
     path: string,
-  ) {}
+  ) {
+    if (dto.page) {
+      return this.pagePaginate(dto, repository, overrideFindOptions);
+    } else {
+      return this.cursorPaginate(dto, repository, overrideFindOptions, path);
+    }
+  }
 
   async cursorPaginate<T extends BaseModel>(
     dto: BasePaginationDto,
     repository: Repository<T>,
     overrideFindOptions: FindManyOptions<T> = {},
     path: string,
-  ) {}
+  ) {
+    const findOptions = this.composeFindOptions<T>(dto);
+    const data = await repository.find({
+      ...findOptions,
+      ...overrideFindOptions,
+    });
+
+    const lastItem = data.length === dto.take ? data[data.length - 1] : null;
+
+    const nextUrl = lastItem && new URL(`${PROTOCOL}://${HOST}/${path}`);
+    if (nextUrl) {
+      for (const key of Object.keys(dto)) {
+        if (key !== 'where__id__more_than' && key !== 'where__id__less_than') {
+          nextUrl.searchParams.append(key, dto[key]);
+        }
+      }
+
+      let key: string;
+      if (dto.order__createdAt === 'ASC') {
+        key = 'where__id__more_than';
+      } else {
+        key = 'where__id__less_than';
+      }
+      nextUrl.searchParams.append(key, lastItem.id.toString());
+    }
+
+    return {
+      data,
+      cursor: {
+        after: lastItem?.id ?? null,
+      },
+      count: data.length,
+      next: nextUrl?.toString() ?? null,
+    };
+  }
 
   private async pagePaginate<T extends BaseModel>(
     dto: BasePaginationDto,
@@ -79,7 +120,7 @@ export class CommonService {
       options[field] = value;
     } else if (split.length === 3) {
       const [_, field, operator] = split;
-      const values = value.split(',');
+      const values = value.toString().split(',');
       options[field] = FILTER_MAPPER[operator](
         values.length > 1 ? values : value,
       );
