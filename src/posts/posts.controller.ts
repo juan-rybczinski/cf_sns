@@ -8,6 +8,7 @@ import {
   Patch,
   Post,
   Query,
+  UseFilters,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -22,6 +23,7 @@ import { LogInterceptor } from '../common/interceptor/log.interceptor';
 import { TransactionInterceptor } from '../common/interceptor/transaction.interceptor';
 import { QueryRunner } from '../common/decorator/query-runner.decorator';
 import { QueryRunner as QR } from 'typeorm';
+import { HttpExceptionFilter } from '../common/exception-filter/http.exception-filter';
 
 @Controller('posts')
 export class PostsController {
@@ -41,6 +43,7 @@ export class PostsController {
   @Post()
   @UseGuards(AccessTokenGuard)
   @UseInterceptors(TransactionInterceptor)
+  @UseFilters(HttpExceptionFilter)
   postPosts(
     @User('id') userId: number,
     @Body() body: CreatePostDto,
