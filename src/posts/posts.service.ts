@@ -1,30 +1,27 @@
 import {
-  BadRequestException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { PostsModel } from './entities/posts.entity';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { PaginatePostDto } from './dto/paginate-post.dto';
 import { CommonService } from '../common/common.service';
-import { basename, join } from 'path';
-import { POST_IMAGE_PATH, TEMP_FOLDER_PATH } from '../common/const/paths.const';
-import { promises } from 'fs';
-import { CreatePostImageDto } from './image/dto/create-image.dto';
-import { ImageModel, ImageModelType } from '../common/entity/image.entity';
+import { ImageModelType } from '../common/entity/image.entity';
 import { DEFAULT_POST_FIND_OPTIONS } from './const/default-post-find-options.const';
+import { ImagesService } from './image/images.service';
 
 @Injectable()
 export class PostsService {
   constructor(
     @InjectRepository(PostsModel)
     private readonly postsRepository: Repository<PostsModel>,
-    @InjectRepository(ImageModel)
-    private readonly imageRepository: Repository<ImageModel>,
+    private readonly imagesService: ImagesService,
     private readonly commonService: CommonService,
+    private readonly dataSource: DataSource,
   ) {}
 
   async getAllPosts() {
@@ -65,46 +62,43 @@ export class PostsService {
     }
   }
 
-  async createPostImage(postDto: CreatePostImageDto) {
-    const tempFilePath = join(TEMP_FOLDER_PATH, postDto.path);
-    try {
-      await promises.access(tempFilePath);
-    } catch (e) {
-      throw new BadRequestException('임시 파일이 존재하지 않습니다!');
-    }
-
-    const fileName = basename(tempFilePath);
-    const publicFilePath = join(POST_IMAGE_PATH, fileName);
-
-    const result = await this.imageRepository.save({
-      ...postDto,
-    });
-
-    await promises.rename(tempFilePath, publicFilePath);
-
-    return result;
-  }
-
   async createPost(authorId: number, postDto: CreatePostDto) {
-    const post = this.postsRepository.create({
-      author: {
-        id: authorId,
-      },
-      ...postDto,
-      images: [],
-      likeCount: 0,
-      commentCount: 0,
-    });
+    const qr = this.dataSource.createQueryRunner();
+    const repository = qr.manager.getRepository<PostsModel>(PostsModel);
+    await qr.connect();
+    await qr.startTransaction();
 
-    const created = await this.postsRepository.save(post);
-
-    for (let i = 0; i < postDto.images.length; i++) {
-      await this.createPostImage({
-        post: created,
-        order: i,
-        path: postDto.images[i],
-        type: ImageModelType.postImage,
+    let created: PostsModel;
+    try {
+      const post = repository.create({
+        author: {
+          id: authorId,
+        },
+        ...postDto,
+        images: [],
+        likeCount: 0,
+        commentCount: 0,
       });
+
+      created = await repository.save(post);
+
+      for (let i = 0; i < postDto.images.length; i++) {
+        await this.imagesService.createPostImage(
+          {
+            post: created,
+            order: i,
+            path: postDto.images[i],
+            type: ImageModelType.postImage,
+          },
+          qr,
+        );
+      }
+      await qr.commitTransaction();
+    } catch (e) {
+      await qr.rollbackTransaction();
+      throw new InternalServerErrorException('Post 저장에 실패했습니다!');
+    } finally {
+      await qr.release();
     }
 
     return this.getPostById(created.id);
