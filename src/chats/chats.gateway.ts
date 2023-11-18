@@ -1,4 +1,5 @@
 import {
+  ConnectedSocket,
   MessageBody,
   OnGatewayConnection,
   SubscribeMessage,
@@ -18,8 +19,17 @@ export class ChatsGateway implements OnGatewayConnection {
     console.log(`On connect called... ${socket.id}`);
   }
 
+  @SubscribeMessage('enter_chat')
+  enterChat(@MessageBody() data: number[], @ConnectedSocket() socket: Socket) {
+    for (const chatId of data) {
+      socket.join(chatId.toString());
+    }
+  }
+
   @SubscribeMessage('send_message')
-  sendMessage(@MessageBody() message: string) {
-    this.server.emit('receive_message', 'Hello from server!');
+  sendMessage(@MessageBody() message: { message: string; chatId: number }) {
+    this.server
+      .in(message.chatId.toString())
+      .emit('receive_message', message.message);
   }
 }
