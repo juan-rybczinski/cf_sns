@@ -19,6 +19,9 @@ import { UpdatePostDto } from './dto/update-post.dto';
 import { PaginatePostDto } from './dto/paginate-post.dto';
 import { UsersModel } from '../users/entities/users.entity';
 import { LogInterceptor } from '../common/interceptor/log.interceptor';
+import { TransactionInterceptor } from '../common/interceptor/transaction.interceptor';
+import { QueryRunner } from '../common/decorator/query-runner.decorator';
+import { QueryRunner as QR } from 'typeorm';
 
 @Controller('posts')
 export class PostsController {
@@ -37,8 +40,13 @@ export class PostsController {
 
   @Post()
   @UseGuards(AccessTokenGuard)
-  postPosts(@User('id') userId: number, @Body() body: CreatePostDto) {
-    return this.postsService.createPost(userId, body);
+  @UseInterceptors(TransactionInterceptor)
+  postPosts(
+    @User('id') userId: number,
+    @Body() body: CreatePostDto,
+    @QueryRunner() qr: QR,
+  ) {
+    return this.postsService.createPost(userId, body, qr);
   }
 
   @Post('random')
