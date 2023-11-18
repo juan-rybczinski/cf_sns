@@ -3,7 +3,7 @@ import { BaseModel } from './base.entity';
 import { IsEnum, IsInt, IsOptional, IsString } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { join } from 'path';
-import { POST_IMAGE_PATH } from '../const/paths.const';
+import { POST_PUBLIC_IMAGE_PATH } from '../const/paths.const';
 import { PostsModel } from '../../posts/entities/posts.entity';
 
 export enum ImageModelType {
@@ -30,7 +30,7 @@ export class ImageModel extends BaseModel {
   @IsString()
   @Transform(({ value, obj }) => {
     if (obj.type === ImageModelType.postImage) {
-      return join(POST_IMAGE_PATH, value);
+      return `/${join(POST_PUBLIC_IMAGE_PATH, value)}`;
     } else {
       return value;
     }
