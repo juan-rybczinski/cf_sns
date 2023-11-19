@@ -26,17 +26,20 @@ import { QueryRunner as QR } from 'typeorm';
 import { HttpExceptionFilter } from '../common/exception-filter/http.exception-filter';
 import { Roles } from '../users/decorator/roles.decorator';
 import { RolesEnum } from '../users/const/roles.const';
+import { IsPublic } from '../common/decorator/is-public.decorator';
 
 @Controller('posts')
 export class PostsController {
   constructor(private readonly postsService: PostsService) {}
 
+  @IsPublic()
   @Get()
   @UseInterceptors(LogInterceptor)
   getPosts(@Query() query: PaginatePostDto) {
     return this.postsService.paginatePosts(query);
   }
 
+  @IsPublic()
   @Get(':id')
   getPost(@Param('id', ParseIntPipe) id: number) {
     return this.postsService.getPostById(id);
