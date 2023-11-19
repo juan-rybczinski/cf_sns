@@ -16,6 +16,7 @@ import { ImageModel } from '../common/entity/image.entity';
     UsersModule,
     CommonModule,
   ],
+  exports: [PostsService],
   controllers: [PostsController],
   providers: [PostsService, ImagesService],
 })
