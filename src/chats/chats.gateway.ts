@@ -2,6 +2,8 @@ import {
   ConnectedSocket,
   MessageBody,
   OnGatewayConnection,
+  OnGatewayDisconnect,
+  OnGatewayInit,
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
@@ -18,11 +20,14 @@ import { SocketExceptionFilter } from './filter/socket-exception.filter';
 import { UsersModel } from '../users/entities/users.entity';
 import { UsersService } from '../users/users.service';
 import { AuthService } from '../auth/auth.service';
+import * as console from 'console';
 
 @WebSocketGateway({
   namespace: 'chats',
 })
-export class ChatsGateway implements OnGatewayConnection {
+export class ChatsGateway
+  implements OnGatewayConnection, OnGatewayInit, OnGatewayDisconnect
+{
   @WebSocketServer()
   server: Server;
 
@@ -137,5 +142,13 @@ export class ChatsGateway implements OnGatewayConnection {
     // this.server
     //   .in(message.chatId.toString())
     //   .emit('receive_message', message.message);
+  }
+
+  afterInit(server: Server): any {
+    console.log(`After gateway init...}`);
+  }
+
+  handleDisconnect(socket: Socket): any {
+    console.log(`On disconnect called... ${socket.id}`);
   }
 }
