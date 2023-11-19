@@ -13,6 +13,7 @@ import { CreateChatDto } from './dto/create-chat.dto';
 import { EnterChatDto } from './dto/enter-chat.dto';
 import { CreateMessageDto } from './messages/dto/create-message.dto';
 import { MessagesService } from './messages/messages.service';
+import { UsePipes, ValidationPipe } from '@nestjs/common';
 
 @WebSocketGateway({
   namespace: 'chats',
@@ -36,6 +37,16 @@ export class ChatsGateway implements OnGatewayConnection {
   }
 
   @SubscribeMessage('enter_chat')
+  @UsePipes(
+    new ValidationPipe({
+      transform: true,
+      transformOptions: {
+        enableImplicitConversion: true,
+      },
+      whitelist: true,
+      forbidNonWhitelisted: true,
+    }),
+  )
   async enterChat(
     @MessageBody() data: EnterChatDto,
     @ConnectedSocket() socket: Socket,
