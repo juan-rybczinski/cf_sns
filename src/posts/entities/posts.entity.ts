@@ -4,6 +4,7 @@ import { BaseModel } from '../../common/entity/base.entity';
 import { IsString } from 'class-validator';
 import { stringValidationMessage } from '../../common/validation-message/string-validation.message';
 import { ImageModel } from '../../common/entity/image.entity';
+import { CommentsModel } from '../comments/entity/comments.entity';
 
 @Entity()
 export class PostsModel extends BaseModel {
@@ -29,6 +30,9 @@ export class PostsModel extends BaseModel {
 
   @Column()
   commentCount: number;
+
+  @OneToMany(() => CommentsModel, (comment) => comment.post)
+  comments: CommentsModel[];
 
   @OneToMany(() => ImageModel, (image) => image.post)
   images: ImageModel[];
