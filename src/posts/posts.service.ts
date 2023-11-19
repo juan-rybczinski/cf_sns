@@ -130,4 +130,12 @@ export class PostsService {
 
     return id;
   }
+
+  checkPostExistsById(id: number) {
+    return this.postsRepository.exist({
+      where: {
+        id,
+      },
+    });
+  }
 }
