@@ -66,16 +66,12 @@ export class CommentsService {
   }
 
   async updateComment(id: number, dto: CreateCommentDto) {
-    const { comment } = dto;
+    const prev = await this.commentsRepository.preload({
+      id,
+      ...dto,
+    });
 
-    const prev = await this.getCommentById(id);
-    if (!prev) {
-      throw new NotFoundException();
-    }
-
-    prev.comment = comment;
-
-    return this.commentsRepository.save(prev);
+    return await this.commentsRepository.save(prev);
   }
 
   async deleteComment(id: number) {
