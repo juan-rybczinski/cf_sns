@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   Param,
   ParseIntPipe,
   Post,
@@ -23,5 +24,11 @@ export class CommentsController {
     @Body() body: CreateCommentDto,
   ) {
     return this.commentsService.postComments(authorId, postId, body);
+  }
+
+  @Get(':cid')
+  @UseGuards(AccessTokenGuard)
+  getComment(@Param('cid', ParseIntPipe) id: number) {
+    return this.commentsService.getCommentById(id);
   }
 }
