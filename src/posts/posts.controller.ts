@@ -9,6 +9,7 @@ import {
   Post,
   Query,
   UseFilters,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { PostsService } from './posts.service';
@@ -25,6 +26,7 @@ import { HttpExceptionFilter } from '../common/exception-filter/http.exception-f
 import { Roles } from '../users/decorator/roles.decorator';
 import { RolesEnum } from '../users/const/roles.const';
 import { IsPublic } from '../common/decorator/is-public.decorator';
+import { IsPostMineOrAdminGuard } from './guard/is-post-mine-or-admin.guard';
 
 @Controller('posts')
 export class PostsController {
@@ -60,9 +62,10 @@ export class PostsController {
     return true;
   }
 
-  @Patch(':id')
+  @Patch(':postId')
+  @UseGuards(IsPostMineOrAdminGuard)
   patchPost(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('postId', ParseIntPipe) id: number,
     @Body() body: UpdatePostDto,
   ) {
     return this.postsService.updatePost(id, body);
