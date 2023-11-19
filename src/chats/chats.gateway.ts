@@ -11,6 +11,8 @@ import { Server, Socket } from 'socket.io';
 import { ChatsService } from './chats.service';
 import { CreateChatDto } from './dto/create-chat.dto';
 import { EnterChatDto } from './dto/enter-chat.dto';
+import { CreateMessageDto } from './messages/dto/create-message.dto';
+import { MessagesService } from './messages/messages.service';
 
 @WebSocketGateway({
   namespace: 'chats',
@@ -19,7 +21,10 @@ export class ChatsGateway implements OnGatewayConnection {
   @WebSocketServer()
   server: Server;
 
-  constructor(private readonly chatService: ChatsService) {}
+  constructor(
+    private readonly chatService: ChatsService,
+    private readonly messageService: MessagesService,
+  ) {}
 
   handleConnection(socket: Socket): any {
     console.log(`On connect called... ${socket.id}`);
@@ -48,12 +53,23 @@ export class ChatsGateway implements OnGatewayConnection {
   }
 
   @SubscribeMessage('send_message')
-  sendMessage(
-    @MessageBody() message: { message: string; chatId: number },
+  async sendMessage(
+    @MessageBody() dto: CreateMessageDto,
     @ConnectedSocket() socket: Socket,
   ) {
+    const chatExists = await this.chatService.checkIfChatExists(dto.chatId);
+
+    if (!chatExists) {
+      throw new WsException({
+        code: 100,
+        message: `존재하지 않는 채팅방입니다! ::: ChatID: ${dto.chatId}`,
+      });
+    }
+
+    const message = await this.messageService.createMessage(dto);
+
     socket
-      .to(message.chatId.toString())
+      .to(message.chat.id.toString())
       .emit('receive_message', message.message);
 
     // this.server
