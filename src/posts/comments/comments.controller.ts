@@ -8,12 +8,14 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { CommentsService } from './comments.service';
 import { User } from '../../users/decorator/user.decorator';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { BasePaginationDto } from '../../common/dto/base-pagination.dto';
 import { IsPublic } from '../../common/decorator/is-public.decorator';
+import { IsCommentMineOrAdminGuard } from './guard/is-comment-mine-or-admin.guard';
 
 @Controller('posts/:pid/comments')
 export class CommentsController {
@@ -29,8 +31,8 @@ export class CommentsController {
   }
 
   @IsPublic()
-  @Get(':cid')
-  getComment(@Param('cid', ParseIntPipe) id: number) {
+  @Get(':commentId')
+  getComment(@Param('commentId', ParseIntPipe) id: number) {
     return this.commentsService.getCommentById(id);
   }
 
@@ -43,16 +45,18 @@ export class CommentsController {
     return this.commentsService.paginateComments(postId, query);
   }
 
-  @Patch(':cid')
+  @Patch(':commentId')
+  @UseGuards(IsCommentMineOrAdminGuard)
   patchComment(
-    @Param('cid', ParseIntPipe) id: number,
+    @Param('commentId', ParseIntPipe) id: number,
     @Body() body: CreateCommentDto,
   ) {
     return this.commentsService.updateComment(id, body);
   }
 
-  @Delete(':cid')
-  deleteComment(@Param('cid', ParseIntPipe) id: number) {
+  @Delete(':commentId')
+  @UseGuards(IsCommentMineOrAdminGuard)
+  deleteComment(@Param('commentId', ParseIntPipe) id: number) {
     return this.commentsService.deleteComment(id);
   }
 }
