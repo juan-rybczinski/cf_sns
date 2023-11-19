@@ -1,23 +1,13 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
 import { UsersService } from './users.service';
+import { RolesEnum } from './const/roles.const';
+import { Roles } from './decorator/roles.decorator';
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Post()
-  postUser(
-    @Body('nickname') nickname: string,
-    @Body('email') email: string,
-    @Body('password') password: string,
-  ) {
-    return this.usersService.createUser({
-      nickname,
-      email,
-      password,
-    });
-  }
-
+  @Roles(RolesEnum.ADMIN)
   @Get()
   getUsers() {
     return this.usersService.getAllUsers();
