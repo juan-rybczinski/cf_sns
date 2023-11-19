@@ -60,4 +60,13 @@ export class CommentsService {
 
     return this.commentsRepository.save(prev);
   }
+
+  async deleteComment(id: number) {
+    const comment = await this.getCommentById(id);
+    if (!comment) {
+      throw new NotFoundException();
+    }
+
+    return this.commentsRepository.delete(id);
+  }
 }
