@@ -24,6 +24,8 @@ import { TransactionInterceptor } from '../common/interceptor/transaction.interc
 import { QueryRunner } from '../common/decorator/query-runner.decorator';
 import { QueryRunner as QR } from 'typeorm';
 import { HttpExceptionFilter } from '../common/exception-filter/http.exception-filter';
+import { Roles } from '../users/decorator/roles.decorator';
+import { RolesEnum } from '../users/const/roles.const';
 
 @Controller('posts')
 export class PostsController {
@@ -68,6 +70,8 @@ export class PostsController {
   }
 
   @Delete(':id')
+  @UseGuards(AccessTokenGuard)
+  @Roles(RolesEnum.ADMIN)
   deletePost(@Param('id', ParseIntPipe) id: number) {
     return this.postsService.deletePost(id);
   }
