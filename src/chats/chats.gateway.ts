@@ -13,8 +13,15 @@ import { CreateChatDto } from './dto/create-chat.dto';
 import { EnterChatDto } from './dto/enter-chat.dto';
 import { CreateMessageDto } from './messages/dto/create-message.dto';
 import { MessagesService } from './messages/messages.service';
-import { UseFilters, UsePipes, ValidationPipe } from '@nestjs/common';
+import {
+  UseFilters,
+  UseGuards,
+  UsePipes,
+  ValidationPipe,
+} from '@nestjs/common';
 import { SocketExceptionFilter } from './filter/socket-exception.filter';
+import { SocketBearerTokenGuard } from '../auth/guard/socket/socket-bearer-token.guard';
+import { UsersModel } from '../users/entities/users.entity';
 
 @WebSocketGateway({
   namespace: 'chats',
@@ -44,7 +51,11 @@ export class ChatsGateway implements OnGatewayConnection {
     }),
   )
   @UseFilters(SocketExceptionFilter)
-  async createChat(@MessageBody() data: CreateChatDto) {
+  @UseGuards(SocketBearerTokenGuard)
+  async createChat(
+    @MessageBody() data: CreateChatDto,
+    @ConnectedSocket() socket: Socket & { user: UsersModel },
+  ) {
     const chat = await this.chatService.createChat(data);
   }
 
