@@ -43,7 +43,14 @@ export class CommentsService {
     return this.commonService.paginate(
       dto,
       this.commentsRepository,
-      DEFAULT_COMMENT_FIND_OPTIONS,
+      {
+        ...DEFAULT_COMMENT_FIND_OPTIONS,
+        where: {
+          post: {
+            id: postId,
+          },
+        },
+      },
       `posts/${postId}/comments`,
     );
   }
