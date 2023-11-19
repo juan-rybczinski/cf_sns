@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CommentsModel } from './entity/comments.entity';
 import { Repository } from 'typeorm';
@@ -15,13 +19,19 @@ export class CommentsService {
     private readonly commonService: CommonService,
   ) {}
 
-  getCommentById(id: number) {
-    return this.commentsRepository.findOne({
+  async getCommentById(id: number) {
+    const comment = await this.commentsRepository.findOne({
       ...DEFAULT_COMMENT_FIND_OPTIONS,
       where: {
         id,
       },
     });
+
+    if (!comment) {
+      throw new BadRequestException(`ID: ${id} Comment는 존재하지 않습니다!`);
+    }
+
+    return comment;
   }
 
   async postComments(authorId: number, postId: number, dto: CreateCommentDto) {
