@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CommentsModel } from './entity/comments.entity';
 import { Repository } from 'typeorm';
@@ -46,5 +46,18 @@ export class CommentsService {
       DEFAULT_COMMENT_FIND_OPTIONS,
       `posts/${postId}/comments`,
     );
+  }
+
+  async updateComment(id: number, dto: CreateCommentDto) {
+    const { comment } = dto;
+
+    const prev = await this.getCommentById(id);
+    if (!prev) {
+      throw new NotFoundException();
+    }
+
+    prev.comment = comment;
+
+    return this.commentsRepository.save(prev);
   }
 }

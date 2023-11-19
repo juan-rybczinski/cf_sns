@@ -4,6 +4,7 @@ import {
   Get,
   Param,
   ParseIntPipe,
+  Patch,
   Post,
   Query,
   UseGuards,
@@ -41,5 +42,14 @@ export class CommentsController {
     @Query() query: BasePaginationDto,
   ) {
     return this.commentsService.paginateComments(postId, query);
+  }
+
+  @Patch(':cid')
+  @UseGuards(AccessTokenGuard)
+  patchComment(
+    @Param('cid', ParseIntPipe) id: number,
+    @Body() body: CreateCommentDto,
+  ) {
+    return this.commentsService.updateComment(id, body);
   }
 }
