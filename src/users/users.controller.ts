@@ -9,11 +9,15 @@ import {
   Patch,
   Post,
   Query,
+  UseInterceptors,
 } from '@nestjs/common';
+import { QueryRunner as QR } from 'typeorm';
 import { UsersService } from './users.service';
 import { RolesEnum } from './const/roles.const';
 import { Roles } from './decorator/roles.decorator';
 import { User } from './decorator/user.decorator';
+import { TransactionInterceptor } from '../common/interceptor/transaction.interceptor';
+import { QueryRunner } from '../common/decorator/query-runner.decorator';
 
 @Controller('users')
 export class UsersController {
@@ -43,18 +47,27 @@ export class UsersController {
   }
 
   @Patch('follow/:id/confirm')
-  patchFollowConfirm(
+  @UseInterceptors(TransactionInterceptor)
+  async patchFollowConfirm(
     @User('id') followeeId: number,
     @Param('id', ParseIntPipe) followerId: number,
+    @QueryRunner() qr: QR,
   ) {
-    return this.usersService.confirmFollow(followerId, followeeId);
+    await this.usersService.confirmFollow(followerId, followeeId, qr);
+    await this.usersService.incrementFollowCount(followeeId, followerId, qr);
+
+    return true;
   }
 
   @Delete('follow/:id')
-  deleteFollow(
+  @UseInterceptors(TransactionInterceptor)
+  async deleteFollow(
     @User('id') followerId: number,
     @Param('id', ParseIntPipe) followeeId: number,
+    @QueryRunner() qr: QR,
   ) {
-    return this.usersService.cancelFollow(followerId, followeeId);
+    await this.usersService.cancelFollow(followerId, followeeId, qr);
+
+    return true;
   }
 }
