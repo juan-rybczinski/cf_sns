@@ -8,10 +8,10 @@ import {
   Patch,
   Post,
   Query,
-  UseFilters,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
+import { QueryRunner as QR } from 'typeorm';
 import { PostsService } from './posts.service';
 import { User } from '../users/decorator/user.decorator';
 import { CreatePostDto } from './dto/create-post.dto';
@@ -21,8 +21,6 @@ import { UsersModel } from '../users/entities/users.entity';
 import { LogInterceptor } from '../common/interceptor/log.interceptor';
 import { TransactionInterceptor } from '../common/interceptor/transaction.interceptor';
 import { QueryRunner } from '../common/decorator/query-runner.decorator';
-import { QueryRunner as QR } from 'typeorm';
-import { HttpExceptionFilter } from '../common/exception-filter/http.exception-filter';
 import { Roles } from '../users/decorator/roles.decorator';
 import { RolesEnum } from '../users/const/roles.const';
 import { IsPublic } from '../common/decorator/is-public.decorator';
@@ -47,7 +45,7 @@ export class PostsController {
 
   @Post()
   @UseInterceptors(TransactionInterceptor)
-  @UseFilters(HttpExceptionFilter)
+  // @UseFilters(HttpExceptionFilter)
   postPosts(
     @User('id') userId: number,
     @Body() body: CreatePostDto,

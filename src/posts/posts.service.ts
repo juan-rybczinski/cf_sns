@@ -152,4 +152,26 @@ export class PostsService {
       },
     });
   }
+
+  incrementCommentCount(postId: number, qr?: QueryRunner) {
+    const repository = this.getRepository(qr);
+    return repository.increment(
+      {
+        id: postId,
+      },
+      'commentCount',
+      1,
+    );
+  }
+
+  decrementCommentCount(postId: number, qr?: QueryRunner) {
+    const repository = this.getRepository(qr);
+    return repository.decrement(
+      {
+        id: postId,
+      },
+      'commentCount',
+      1,
+    );
+  }
 }

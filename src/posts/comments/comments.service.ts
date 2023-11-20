@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CommentsModel } from './entity/comments.entity';
-import { Repository } from 'typeorm';
+import { QueryRunner, Repository } from 'typeorm';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { BasePaginationDto } from '../../common/dto/base-pagination.dto';
 import { DEFAULT_COMMENT_FIND_OPTIONS } from './const/default-comment-find-options';
@@ -15,8 +15,16 @@ export class CommentsService {
     private readonly commonService: CommonService,
   ) {}
 
-  async getCommentById(id: number) {
-    const comment = await this.commentsRepository.findOne({
+  getRepository(qr: QueryRunner) {
+    return qr
+      ? qr.manager.getRepository<CommentsModel>(CommentsModel)
+      : this.commentsRepository;
+  }
+
+  async getCommentById(id: number, qr?: QueryRunner) {
+    const repository = this.getRepository(qr);
+
+    const comment = await repository.findOne({
       ...DEFAULT_COMMENT_FIND_OPTIONS,
       where: {
         id,
@@ -30,8 +38,15 @@ export class CommentsService {
     return comment;
   }
 
-  async postComments(authorId: number, postId: number, dto: CreateCommentDto) {
-    const comment = await this.commentsRepository.save({
+  async postComments(
+    authorId: number,
+    postId: number,
+    dto: CreateCommentDto,
+    qr?: QueryRunner,
+  ) {
+    const repository = this.getRepository(qr);
+
+    const comment = await repository.save({
       author: {
         id: authorId,
       },
@@ -42,7 +57,7 @@ export class CommentsService {
       likeCount: 0,
     });
 
-    return this.getCommentById(comment.id);
+    return this.getCommentById(comment.id, qr);
   }
 
   paginateComments(postId: number, dto: BasePaginationDto) {
@@ -75,13 +90,15 @@ export class CommentsService {
     return await this.commentsRepository.save(updated);
   }
 
-  async deleteComment(id: number) {
-    const comment = await this.getCommentById(id);
+  async deleteComment(id: number, qr?: QueryRunner) {
+    const repository = this.getRepository(qr);
+
+    const comment = await this.getCommentById(id, qr);
     if (!comment) {
       throw new BadRequestException('존재하지 않는 댓글입니다!');
     }
 
-    await this.commentsRepository.delete(id);
+    await repository.delete(id);
 
     return id;
   }
