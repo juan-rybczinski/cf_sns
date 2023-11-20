@@ -10,6 +10,7 @@ import { Exclude } from 'class-transformer';
 import { ChatsModel } from '../../chats/entity/chats.entity';
 import { MessagesModel } from '../../chats/messages/entity/messages.entity';
 import { CommentsModel } from '../../posts/comments/entity/comments.entity';
+import { UserFollowModel } from './user-follow.entity';
 
 @Entity()
 export class UsersModel extends BaseModel {
@@ -70,10 +71,9 @@ export class UsersModel extends BaseModel {
   @OneToMany(() => CommentsModel, (comment) => comment.author)
   comments: CommentsModel[];
 
-  @ManyToMany(() => UsersModel, (user) => user.followees)
-  @JoinTable()
+  @OneToMany(() => UserFollowModel, (ufm) => ufm.follower)
   followers: UsersModel[];
 
-  @ManyToMany(() => UsersModel, (user) => user.followers)
+  @OneToMany(() => UserFollowModel, (ufm) => ufm.followee)
   followees: UsersModel[];
 }
