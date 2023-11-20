@@ -1,4 +1,14 @@
-import { Controller, Get, Param, ParseIntPipe, Post } from '@nestjs/common';
+import {
+  Controller,
+  DefaultValuePipe,
+  Get,
+  Param,
+  ParseBoolPipe,
+  ParseIntPipe,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { RolesEnum } from './const/roles.const';
 import { Roles } from './decorator/roles.decorator';
@@ -23,7 +33,19 @@ export class UsersController {
   }
 
   @Get('follow/me')
-  getFollowers(@User('id') userId: number) {
-    return this.usersService.getFollowers(userId);
+  getFollowers(
+    @User('id') userId: number,
+    @Query('includeNotConfirmed', new DefaultValuePipe(false), ParseBoolPipe)
+    includeNotConfirmed: boolean,
+  ) {
+    return this.usersService.getFollowers(userId, includeNotConfirmed);
+  }
+
+  @Patch('follow/:id/confirm')
+  patchFollowConfirm(
+    @User('id') followeeId: number,
+    @Param('id', ParseIntPipe) followerId: number,
+  ) {
+    return this.usersService.confirmFollow(followerId, followeeId);
   }
 }

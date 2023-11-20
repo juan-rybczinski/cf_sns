@@ -64,18 +64,53 @@ export class UsersService {
     });
   }
 
-  async getFollowers(userId: number) {
-    const result = await this.userFollowRepository.find({
-      where: {
-        followee: {
-          id: userId,
-        },
+  async getFollowers(userId: number, includeNotConfirmed: boolean) {
+    const where = {
+      followee: {
+        id: userId,
       },
+    };
+    if (!includeNotConfirmed) {
+      where['isConfirmed'] = true;
+    }
+
+    const result = await this.userFollowRepository.find({
+      where,
       relations: {
         follower: true,
       },
     });
 
-    return result.map((userFollow) => userFollow.follower);
+    return result.map((userFollow) => {
+      const { id, nickname, email } = userFollow.follower;
+
+      return { id, nickname, email, isConfirmed: userFollow.isConfirmed };
+    });
+  }
+
+  async confirmFollow(followerId: number, followeeId: number) {
+    const userFollow = await this.userFollowRepository.findOne({
+      where: {
+        follower: {
+          id: followerId,
+        },
+        followee: {
+          id: followeeId,
+        },
+      },
+      relations: {
+        follower: true,
+        followee: true,
+      },
+    });
+
+    if (!userFollow) {
+      throw new BadRequestException('존재하지 않는 팔로우 요청입니다!');
+    }
+
+    return this.userFollowRepository.save({
+      ...userFollow,
+      isConfirmed: true,
+    });
   }
 }
