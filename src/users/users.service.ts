@@ -113,4 +113,15 @@ export class UsersService {
       isConfirmed: true,
     });
   }
+
+  cancelFollow(followerId: number, followeeId: number) {
+    return this.userFollowRepository.delete({
+      follower: {
+        id: followerId,
+      },
+      followee: {
+        id: followeeId,
+      },
+    });
+  }
 }
