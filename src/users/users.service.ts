@@ -2,12 +2,15 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UsersModel } from './entities/users.entity';
 import { Repository } from 'typeorm';
+import { UserFollowModel } from './entities/user-follow.entity';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(UsersModel)
     private readonly usersRepository: Repository<UsersModel>,
+    @InjectRepository(UserFollowModel)
+    private readonly userFollowRepository: Repository<UserFollowModel>,
   ) {}
 
   async createUser(user: Pick<UsersModel, 'nickname' | 'email' | 'password'>) {
@@ -51,40 +54,28 @@ export class UsersService {
   }
 
   async followUser(followerId: number, followeeId: number) {
-    const user = await this.usersRepository.findOne({
-      where: {
+    return await this.userFollowRepository.save({
+      follower: {
+        id: followerId,
+      },
+      followee: {
         id: followeeId,
       },
-      relations: {
-        followers: true,
-      },
-    });
-
-    if (!user) {
-      throw new BadRequestException('존재하지 않는 팔로워입니다!');
-    }
-
-    return await this.usersRepository.save({
-      ...user,
-      followers: [
-        ...user.followers,
-        {
-          id: followerId,
-        },
-      ],
     });
   }
 
   async getFollowers(userId: number) {
-    const user = await this.usersRepository.findOne({
+    const result = await this.userFollowRepository.find({
       where: {
-        id: userId,
+        followee: {
+          id: userId,
+        },
       },
       relations: {
-        followers: true,
+        follower: true,
       },
     });
 
-    return user.followers;
+    return result.map((userFollow) => userFollow.follower);
   }
 }
